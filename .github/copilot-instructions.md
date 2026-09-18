@@ -1,0 +1,3 @@
+- Use React + Vite + TypeScript conventions in this workspace.
+- Keep the MobiHub interface responsive and preserve the navy, yellow, and coral visual language.
+- Use localStorage for demo catalog persistence; do not add a backend unless requested.
