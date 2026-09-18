@@ -28,31 +28,3 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/mobihub:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/mobihub:${{ github.sha }}
-```[cite: 10]
-
-3. Bấm **Commit changes**[cite: 10].
-4. Chuyển sang tab **Actions** trên GitHub, chờ cho đến khi xuất hiện **dấu tích màu xanh** (Success)[cite: 10].
-
----
-
-### **4. Deploy ứng dụng lên Render**
-1. Đăng nhập **[Render Dashboard](https://dashboard.render.com/)**[cite: 10].
-2. Bấm nút **+ New** (hoặc **Add new**) ở góc trên bên phải $\rightarrow$ Chọn **Web Service**[cite: 10].
-3. Chọn tab **Git Provider**, tìm và chọn repository **`Kipdv67/MobiHub`** $\rightarrow$ Bấm **Connect**[cite: 10].
-4. Cấu hình các thông tin cơ bản:
-   * **Name**: `mobihub` (hoặc tên tùy chọn).
-   * **Runtime**: Chọn **`Docker`**.
-   * **Instance Type**: Chọn gói **`Free`** ($0/month) để tránh phát sinh chi phí[cite: 10].
-5. Kéo xuống cuối trang và bấm nút **Deploy Web Service**[cite: 10].
-
----
-
-### **5. Kiểm tra kết quả**
-1. Chờ Render tiến hành kéo Docker Image và xây dựng dịch vụ trong vài phút[cite: 10].
-2. Khi log hiển thị thông báo **`Your service is live 🚀`**, Render sẽ cấp cho bạn một đường dẫn URL (dạng `[https://mobihub.onrender.com](https://mobihub.onrender.com)`)[cite: 10].
-3. Click vào đường link đó để truy cập vào trang web đã deploy thành công[cite: 10]!
-
-<Elicitations message="Bạn muốn làm gì tiếp theo?">
-  <Elicitation label="Kiểm tra tiến trình Actions" query="Làm sao để biết GitHub Actions đã push Docker Image thành công?"/>
-  <Elicitation label="Xử lý lỗi trên Render" query="Nếu Render báo lỗi khi đang deploy thì phải làm sao?"/>
-</Elicitations>
