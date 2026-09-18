@@ -183,6 +183,7 @@ function App() {
 
   const loginCustomer = (customer: Customer) => {
     setCurrentCustomer(customer)
+    setMode('store')
     localStorage.setItem('mobihub-current-customer', JSON.stringify(customer))
   }
 
@@ -194,6 +195,7 @@ function App() {
   }
 
   const openAdmin = () => {
+    if (currentCustomer) return
     if (adminAuthenticated) setMode('admin')
     else setShowAdminLogin(true)
   }
@@ -216,6 +218,7 @@ function App() {
       ),
     [products, category, query],
   )
+  const canViewAdmin = adminAuthenticated && !currentCustomer
 
   const notify = (message: string) => {
     setToast(message)
@@ -257,9 +260,11 @@ function App() {
 
       <nav className="nav">
         <div className="nav-inner">
-          <button className="menu-button" aria-label="Mở trang quản trị" onClick={() => mode === 'admin' ? setMode('store') : openAdmin()}>
-            <Menu size={20} />
-          </button>
+          {!currentCustomer && (
+            <button className="menu-button" aria-label="Mở trang quản trị" onClick={() => mode === 'admin' ? setMode('store') : openAdmin()}>
+              <Menu size={20} />
+            </button>
+          )}
 
           <button className="brand" onClick={() => setMode('store')}>
             <span className="brand-mark">
@@ -274,9 +279,11 @@ function App() {
             <button className={mode === 'store' ? 'active' : ''} onClick={() => setMode('store')}>
               Cửa hàng
             </button>
-            <button className={mode === 'admin' ? 'active' : ''} onClick={openAdmin}>
-              <LayoutDashboard size={15} /> Quản trị
-            </button>
+            {!currentCustomer && (
+              <button className={mode === 'admin' ? 'active' : ''} onClick={openAdmin}>
+                <LayoutDashboard size={15} /> Quản trị
+              </button>
+            )}
           </div>
 
           {mode === 'store' && (
@@ -301,7 +308,7 @@ function App() {
         </div>
       </nav>
 
-      {mode === 'store' ? (
+      {!canViewAdmin || mode === 'store' ? (
         <StoreView categories={categories} category={category} setCategory={setCategory} filtered={filtered} addToCart={addToCart} setSelected={setSelected} />
       ) : (
         <AdminView

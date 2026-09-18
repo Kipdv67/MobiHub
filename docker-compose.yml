@@ -1,12 +1,12 @@
 version: '3.8'
 services:
-  next-app:
+  mobihub:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: next-app
+    container_name: mobihub
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       - NODE_ENV=production
     restart: always
