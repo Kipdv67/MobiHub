@@ -1,4 +1,4 @@
-# Stage 1: Build ứng dụng
+# Stage 1: Build frontend
 FROM node:22-alpine AS builder
 WORKDIR /app
 
@@ -8,10 +8,9 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve static files and proxy API requests
+# Stage 2: Serve static files
 FROM nginx:alpine AS runner
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
