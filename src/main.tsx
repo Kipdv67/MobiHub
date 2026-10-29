@@ -80,7 +80,17 @@ const seedProducts: Product[] = [
   { id: 4, name: 'OPPO Reno12 Pro 5G', brand: 'OPPO', price: 12990000, oldPrice: 14990000, category: 'OPPO', badge: 'Hot', rating: 4.6, stock: 15, image: 'https://images.unsplash.com/photo-1596558450268-9c27524ba856?auto=format&fit=crop&w=700&q=85', colors: ['#d6c5ef', '#1c1c22'] },
   { id: 5, name: 'iPad Air M2 11 inch WiFi', brand: 'Apple', price: 16490000, oldPrice: 17990000, category: 'Tablet', rating: 4.8, stock: 6, image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=700&q=85', colors: ['#bac9d5', '#d8d8d8'] },
   { id: 6, name: 'MacBook Air M3 13 inch', brand: 'Apple', price: 24990000, oldPrice: 27990000, category: 'Laptop', badge: 'Trả góp 0%', rating: 4.9, stock: 4, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=700&q=85', colors: ['#b7b9bb', '#eee'] },
+  { id: 7, name: 'Tai nghe không dây AirPods Pro 2', brand: 'Apple', price: 5490000, oldPrice: 6190000, category: 'Tai nghe', badge: 'Giảm 11%', rating: 4.9, stock: 18, image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=700&q=85', colors: ['#f5f5f5'] },
+  { id: 8, name: 'Tai nghe Bluetooth Sony WH-CH520', brand: 'Sony', price: 1190000, oldPrice: 1490000, category: 'Tai nghe', badge: 'Bán chạy', rating: 4.8, stock: 25, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=85', colors: ['#20242a', '#f0f0f0'] },
+  { id: 9, name: 'Tai nghe chụp tai JBL Tune 520BT', brand: 'JBL', price: 1290000, oldPrice: 1590000, category: 'Tai nghe', rating: 4.7, stock: 14, image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=700&q=85', colors: ['#20242a', '#3153a4'] },
+  { id: 10, name: 'Tai nghe có dây Apple EarPods USB-C', brand: 'Apple', price: 549000, oldPrice: 590000, category: 'Tai nghe có dây', badge: 'Chính hãng', rating: 4.8, stock: 32, image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=700&q=85', colors: ['#f5f5f5'] },
+  { id: 11, name: 'Tai nghe có dây Xiaomi Mi In-Ear', brand: 'Xiaomi', price: 249000, oldPrice: 299000, category: 'Tai nghe có dây', rating: 4.6, stock: 40, image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=700&q=85', colors: ['#20242a', '#f5f5f5'] },
+  { id: 12, name: 'Pin sạc dự phòng Anker 10.000mAh', brand: 'Anker', price: 890000, oldPrice: 1090000, category: 'Sạc dự phòng', badge: 'Sạc nhanh', rating: 4.8, stock: 20, image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=700&q=85', colors: ['#20242a', '#e6e8eb'] },
+  { id: 13, name: 'Pin sạc dự phòng Baseus 20.000mAh', brand: 'Baseus', price: 690000, oldPrice: 850000, category: 'Sạc dự phòng', rating: 4.7, stock: 16, image: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=700&q=85', colors: ['#20242a', '#f5f5f5'] },
 ]
+
+const accessoryProducts = seedProducts.filter((product) => product.id >= 7)
+const accessoryMigrationKey = 'mobihub-accessories-seeded'
 
 const seedOrders: Order[] = [
   { id: '#MH-24091', customer: 'Nguyễn Minh Anh', phone: '0909091111', address: '12 Lê Lợi, Quận 1, TP.HCM', payment: 'COD', item: 'iPhone 15 Pro Max', items: [{ name: 'iPhone 15 Pro Max', price: 28990000 }], amount: 28990000, status: 'Đang giao', time: '10 phút trước' },
@@ -128,7 +138,18 @@ function App() {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('mobihub-products')
-      return saved ? JSON.parse(saved) : seedProducts
+      if (!saved) return seedProducts
+
+      const parsed: Product[] = JSON.parse(saved)
+      if (!Array.isArray(parsed) || localStorage.getItem(accessoryMigrationKey) === 'true') return parsed
+
+      const migrated = [
+        ...parsed,
+        ...accessoryProducts.filter((product) => !parsed.some((savedProduct) => savedProduct.id === product.id)),
+      ]
+      localStorage.setItem('mobihub-products', JSON.stringify(migrated))
+      localStorage.setItem(accessoryMigrationKey, 'true')
+      return migrated
     } catch {
       return seedProducts
     }
@@ -208,7 +229,7 @@ function App() {
     notify('Đã đăng xuất tài khoản quản trị')
   }
 
-  const categories = ['Tất cả', 'iPhone', 'Samsung', 'Xiaomi', 'OPPO', 'Tablet', 'Laptop']
+  const categories = ['Tất cả', 'iPhone', 'Samsung', 'Xiaomi', 'OPPO', 'Tablet', 'Laptop', 'Tai nghe', 'Tai nghe có dây', 'Sạc dự phòng']
   const filtered = useMemo(
     () =>
       products.filter(
@@ -1248,6 +1269,10 @@ function ProductForm({
               <option>Samsung</option>
               <option>Xiaomi</option>
               <option>OPPO</option>
+              <option>Sony</option>
+              <option>JBL</option>
+              <option>Anker</option>
+              <option>Baseus</option>
             </select>
           </label>
 
@@ -1270,6 +1295,9 @@ function ProductForm({
               <option>OPPO</option>
               <option>Tablet</option>
               <option>Laptop</option>
+              <option>Tai nghe</option>
+              <option>Tai nghe có dây</option>
+              <option>Sạc dự phòng</option>
             </select>
           </label>
 
