@@ -9,6 +9,7 @@ import {
   Download,
   LayoutDashboard,
   Menu,
+  Minus,
   Package,
   Plus,
   ReceiptText,
@@ -40,6 +41,11 @@ type Product = {
   colors: string[]
 }
 
+type CartItem = {
+  product: Product
+  quantity: number
+}
+
 type Order = {
   id: string
   customer: string
@@ -47,7 +53,7 @@ type Order = {
   address: string
   payment: CheckoutPayload['payment']
   item: string
-  items: Array<{ name: string; price: number }>
+  items: Array<{ name: string; price: number; quantity?: number }>
   amount: number
   status: 'Đang xử lý' | 'Đang giao' | 'Hoàn tất'
   time: string
@@ -166,7 +172,7 @@ function App() {
   const [mode, setMode] = useState<'store' | 'admin'>('store')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('Tất cả')
-  const [cart, setCart] = useState<Product[]>([])
+  const [cart, setCart] = useState<CartItem[]>([])
   const [selected, setSelected] = useState<Product | null>(null)
   const [showCart, setShowCart] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -247,7 +253,18 @@ function App() {
   }
 
   const addToCart = (product: Product) => {
-    setCart((items) => [...items, product])
+    const current = cart.find((item) => item.product.id === product.id)
+    if (product.stock < 1) {
+      notify('Sản phẩm hiện đã hết hàng')
+      return
+    }
+    if (current && current.quantity >= product.stock) {
+      notify('Số lượng trong giỏ đã đạt tồn kho')
+      return
+    }
+    setCart((items) => current
+      ? items.map((item) => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+      : [...items, { product, quantity: 1 }])
     notify('Đã thêm sản phẩm vào giỏ hàng')
   }
 
@@ -322,7 +339,7 @@ function App() {
             </button>
             <button className="cart-btn" onClick={() => setShowCart(true)}>
               <ShoppingCart size={19} />
-              <b>{cart.length}</b>
+              <b>{cart.reduce((sum, item) => sum + item.quantity, 0)}</b>
               <span>Giỏ hàng</span>
             </button>
           </div>
@@ -359,11 +376,19 @@ function App() {
         <CartDrawer
           cart={cart}
           onClose={() => setShowCart(false)}
-          remove={(index) => setCart((items) => items.filter((_, itemIndex) => itemIndex !== index))}
+          updateQuantity={(productId, change) => setCart((items) =>
+            items.flatMap((item) => {
+              if (item.product.id !== productId) return [item]
+              const quantity = item.quantity + change
+              return quantity > 0 ? [{ ...item, quantity }] : []
+            }),
+          )}
+          remove={(productId) => setCart((items) => items.filter((item) => item.product.id !== productId))}
           checkout={(payload: CheckoutPayload) => {
-            const total = cart.reduce((sum, item) => sum + item.price, 0)
-            const orderItems = cart.map((item) => ({ name: item.name, price: item.price }))
+            const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+            const orderItems = cart.map(({ product, quantity }) => ({ name: product.name, price: product.price, quantity }))
             const itemNames = orderItems.map((item) => item.name).slice(0, 2).join(', ')
+            const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
             const newOrder: Order = {
               id: `#MH-${Date.now().toString().slice(-5)}`,
@@ -371,7 +396,7 @@ function App() {
               phone: payload.phone,
               address: payload.address,
               payment: payload.payment,
-              item: cart.length > 2 ? `${itemNames} + ${cart.length - 2} sản phẩm` : itemNames || 'Sản phẩm',
+              item: itemCount > 2 ? `${itemNames} + ${itemCount - 2} sản phẩm` : itemNames || 'Sản phẩm',
               items: orderItems,
               amount: total,
               status: 'Đang xử lý',
@@ -637,15 +662,18 @@ function ProductModal({
 function CartDrawer({
   cart,
   onClose,
+  updateQuantity,
   remove,
   checkout,
 }: {
-  cart: Product[]
+  cart: CartItem[]
   onClose: () => void
-  remove: (index: number) => void
+  updateQuantity: (productId: number, change: number) => void
+  remove: (productId: number) => void
   checkout: (payload: CheckoutPayload) => void
 }) {
-  const total = cart.reduce((sum, item) => sum + item.price, 0)
+  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
   const [isCheckoutForm, setIsCheckoutForm] = useState(false)
   const [customer, setCustomer] = useState('')
   const [phone, setPhone] = useState('')
@@ -675,7 +703,7 @@ function CartDrawer({
           <div>
             <span className="section-kicker">Đơn hàng của bạn</span>
             <h2>
-              Giỏ hàng <span>({cart.length})</span>
+              Giỏ hàng <span>({itemCount})</span>
             </h2>
           </div>
           <button className="close-btn" onClick={onClose}>
@@ -728,14 +756,28 @@ function CartDrawer({
         ) : (
           <>
             <div className="cart-items">
-              {cart.map((product, index) => (
-                <div className="cart-item" key={`${product.id}-${index}`}>
+              {cart.map(({ product, quantity }) => (
+                <div className="cart-item" key={product.id}>
                   <img src={product.image} alt="" />
                   <div>
                     <b>{product.name}</b>
-                    <span>{money(product.price)}</span>
+                    <span>{money(product.price * quantity)}</span>
+                    <small>{money(product.price)} / sản phẩm</small>
                   </div>
-                  <button onClick={() => remove(index)}>
+                  <div className="quantity-control" aria-label={`Số lượng ${product.name}`}>
+                    <button aria-label={`Giảm số lượng ${product.name}`} onClick={() => updateQuantity(product.id, -1)}>
+                      <Minus size={14} />
+                    </button>
+                    <span>{quantity}</span>
+                    <button
+                      aria-label={`Tăng số lượng ${product.name}`}
+                      disabled={quantity >= product.stock}
+                      onClick={() => updateQuantity(product.id, 1)}
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                  <button className="remove-cart-item" aria-label={`Xóa ${product.name} khỏi giỏ`} onClick={() => remove(product.id)}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -947,14 +989,18 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
     context.fillStyle = '#58707c'
     context.font = '700 17px Arial'
     context.fillText('SẢN PHẨM', 105, tableTop + 36)
-    context.fillText('ĐƠN GIÁ', 990, tableTop + 36)
+    context.fillText('SL', 820, tableTop + 36)
+    context.fillText('ĐƠN GIÁ', 930, tableTop + 36)
+    context.fillText('THÀNH TIỀN', 1130, tableTop + 36)
 
     order.items.forEach((item, index) => {
       const rowTop = tableTop + 58 + index * 62
       context.fillStyle = '#102a43'
       context.font = '20px Arial'
       context.fillText(item.name, 105, rowTop + 38)
-      context.fillText(money(item.price), 990, rowTop + 38)
+      context.fillText(String(item.quantity || 1), 820, rowTop + 38)
+      context.fillText(money(item.price), 930, rowTop + 38)
+      context.fillText(money(item.price * (item.quantity || 1)), 1130, rowTop + 38)
       context.strokeStyle = '#dfe8ec'
       context.beginPath()
       context.moveTo(80, rowTop + 62)
@@ -1033,14 +1079,18 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
             <thead>
               <tr>
                 <th>Sản phẩm</th>
+                <th>Số lượng</th>
                 <th>Đơn giá</th>
+                <th>Thành tiền</th>
               </tr>
             </thead>
             <tbody>
               {order.items.map((item, index) => (
                 <tr key={`${item.name}-${index}`}>
                   <td>{item.name}</td>
+                  <td>{item.quantity || 1}</td>
                   <td>{money(item.price)}</td>
+                  <td>{money(item.price * (item.quantity || 1))}</td>
                 </tr>
               ))}
             </tbody>
