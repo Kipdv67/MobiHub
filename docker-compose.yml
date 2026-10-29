@@ -14,9 +14,9 @@ services:
       - uda_cloud_default
 
   backend:
-    build: 
-      context: .
-      dockerfile: server/Dockerfile
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: mobihub_backend
     ports:
       - "5000:5000"
