@@ -9,7 +9,17 @@ npm install
 npm run dev
 ```
 
-Ứng dụng gồm giao diện cửa hàng, tìm kiếm/lọc sản phẩm, giỏ hàng, và dashboard admin. Dữ liệu sản phẩm/đơn hàng mẫu được lưu trong localStorage của trình duyệt.
+Ứng dụng gồm:
+
+- Catalog có tìm kiếm, lọc danh mục/thương hiệu/khoảng giá và sắp xếp.
+- Trang chi tiết sản phẩm, thông số do quản trị viên cập nhật, đánh giá lưu trên trình duyệt và so sánh tối đa 3 sản phẩm.
+- Giỏ hàng có tăng/giảm số lượng, mã khuyến mãi, giao hàng hoặc chọn điểm nhận minh họa; tài khoản có lịch sử đơn và hóa đơn.
+- Khu vực ưu đãi, tìm cửa hàng theo khu vực, bài viết công nghệ, FAQ và biểu mẫu hỗ trợ.
+- Dashboard admin để quản lý catalog và đơn hàng.
+
+Mã ưu đãi mẫu: `MOBI10` giảm 10% cho đơn từ 2.000.000đ (tối đa 500.000đ); `TECH100` giảm 100.000đ cho đơn từ 5.000.000đ.
+
+Dữ liệu catalog, đơn hàng, tài khoản, đánh giá và lời nhắn hỗ trợ được lưu trong `localStorage` của trình duyệt. Đây là bản demo frontend: địa chỉ cửa hàng chỉ minh họa, tồn kho theo chi nhánh, thanh toán, giao hàng và gửi yêu cầu hỗ trợ chưa kết nối dịch vụ thực tế.
 
 ## Deploy giao diện lên Render
 

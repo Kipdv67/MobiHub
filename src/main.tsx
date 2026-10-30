@@ -8,22 +8,29 @@ import {
   CircleUserRound,
   Download,
   LayoutDashboard,
+  Mail,
+  MapPin,
+  MessageCircle,
   Menu,
   Minus,
   Package,
   Plus,
+  BookOpen,
   ReceiptText,
   Search,
+  Scale,
   Settings,
   ShoppingBag,
   ShoppingCart,
   Smartphone,
   Star,
+  Phone,
   Tag,
   Trash2,
   Truck,
   Users,
   X,
+  Clock3,
 } from 'lucide-react'
 import './styles.css'
 
@@ -39,11 +46,50 @@ type Product = {
   stock: number
   image: string
   colors: string[]
+  specifications?: string
 }
 
 type CartItem = {
   product: Product
   quantity: number
+}
+
+type ProductSort = 'recommended' | 'price-asc' | 'price-desc' | 'rating'
+
+type Review = {
+  id: string
+  productId: number
+  name: string
+  rating: number
+  comment: string
+  date: string
+}
+
+type Article = {
+  id: number
+  category: string
+  title: string
+  excerpt: string
+  readTime: string
+  image: string
+  content: string[]
+}
+
+type StoreLocation = {
+  id: number
+  city: string
+  name: string
+  address: string
+  hours: string
+  phone: string
+}
+
+type SupportRequest = {
+  id: string
+  name: string
+  contact: string
+  message: string
+  createdAt: string
 }
 
 type Order = {
@@ -57,6 +103,11 @@ type Order = {
   amount: number
   status: 'Đang xử lý' | 'Đang giao' | 'Hoàn tất'
   time: string
+  subtotal?: number
+  discount?: number
+  promoCode?: string
+  fulfillment?: 'Giao hàng' | 'Nhận tại cửa hàng'
+  pickupStore?: string
 }
 
 type CheckoutPayload = {
@@ -64,6 +115,10 @@ type CheckoutPayload = {
   phone: string
   address: string
   payment: 'COD' | 'Momo' | 'Banking' | 'Card'
+  promoCode: string
+  discount: number
+  fulfillment: 'Giao hàng' | 'Nhận tại cửa hàng'
+  pickupStore: string
 }
 
 type Customer = {
@@ -98,6 +153,64 @@ const seedProducts: Product[] = [
 const accessoryProducts = seedProducts.filter((product) => product.id >= 7)
 const accessoryMigrationKey = 'mobihub-accessories-seeded'
 
+const promoOffers = [
+  { code: 'MOBI10', title: 'Giảm 10%', description: 'Giảm 10% đơn từ 2.000.000đ, tối đa 500.000đ.' },
+  { code: 'TECH100', title: 'Giảm 100.000đ', description: 'Ưu đãi 100.000đ cho đơn từ 5.000.000đ.' },
+]
+
+const demoStores: StoreLocation[] = [
+  { id: 1, city: 'TP. Hồ Chí Minh', name: 'MobiHub Demo - Quận 1', address: 'Địa chỉ minh họa: đường Nguyễn Huệ, Quận 1', hours: '09:00 - 21:00', phone: 'Chưa thiết lập' },
+  { id: 2, city: 'Hà Nội', name: 'MobiHub Demo - Cầu Giấy', address: 'Địa chỉ minh họa: đường Cầu Giấy, quận Cầu Giấy', hours: '09:00 - 21:00', phone: 'Chưa thiết lập' },
+  { id: 3, city: 'Đà Nẵng', name: 'MobiHub Demo - Hải Châu', address: 'Địa chỉ minh họa: đường Nguyễn Văn Linh, quận Hải Châu', hours: '09:00 - 21:00', phone: 'Chưa thiết lập' },
+]
+
+const articles: Article[] = [
+  {
+    id: 1,
+    category: 'Mẹo công nghệ',
+    title: '5 điều nên kiểm tra trước khi chọn mua điện thoại mới',
+    excerpt: 'Từ nhu cầu sử dụng đến dung lượng pin, một checklist nhỏ giúp bạn chọn thiết bị phù hợp hơn.',
+    readTime: '4 phút đọc',
+    image: 'https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&w=800&q=85',
+    content: [
+      'Bắt đầu từ nhu cầu thực tế: chụp ảnh, chơi game, làm việc hay liên lạc cơ bản. Việc xác định ưu tiên giúp bạn chọn đúng cấu hình mà không phải trả thêm cho tính năng ít dùng.',
+      'Hãy cân nhắc dung lượng lưu trữ, thời lượng pin, kích thước màn hình và thời gian hỗ trợ phần mềm. Nếu có thể, hãy trải nghiệm máy trực tiếp trước khi mua.',
+      'Cuối cùng, kiểm tra chính sách bảo hành, đổi trả và các phụ kiện tương thích. Giá niêm yết chỉ là một phần trong tổng chi phí sử dụng thiết bị.',
+    ],
+  },
+  {
+    id: 2,
+    category: 'Hướng dẫn',
+    title: 'Cách giữ pin điện thoại bền hơn trong quá trình sử dụng',
+    excerpt: 'Một vài thói quen sạc và sử dụng đơn giản có thể giúp bạn chăm sóc pin tốt hơn.',
+    readTime: '3 phút đọc',
+    image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=85',
+    content: [
+      'Dùng bộ sạc tương thích và phụ kiện có nguồn gốc rõ ràng. Tránh để thiết bị ở nơi quá nóng trong thời gian dài, đặc biệt khi đang sạc.',
+      'Bật các tính năng tối ưu pin nếu thiết bị hỗ trợ và cập nhật phần mềm định kỳ. Không cần cố duy trì một quy tắc sạc duy nhất; hãy làm theo hướng dẫn của nhà sản xuất.',
+    ],
+  },
+  {
+    id: 3,
+    category: 'Góc phụ kiện',
+    title: 'Chọn tai nghe phù hợp: không dây hay có dây?',
+    excerpt: 'So sánh nhanh ưu điểm của hai kiểu tai nghe để tìm lựa chọn phù hợp với thói quen nghe.',
+    readTime: '3 phút đọc',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=85',
+    content: [
+      'Tai nghe không dây tiện lợi khi di chuyển và giảm vướng víu. Bạn nên để ý thời lượng pin, cách đeo và khả năng kết nối với thiết bị của mình.',
+      'Tai nghe có dây thường không cần sạc riêng và thao tác đơn giản. Hãy kiểm tra chuẩn kết nối, vì một số điện thoại cần đầu chuyển phù hợp.',
+    ],
+  },
+]
+
+const supportFaqs = [
+  { question: 'Làm sao để đặt hàng trên MobiHub?', answer: 'Chọn sản phẩm, thêm vào giỏ hàng, cập nhật số lượng rồi điền thông tin giao hàng để tạo đơn demo.' },
+  { question: 'Tôi có thể theo dõi đơn hàng ở đâu?', answer: 'Đăng nhập tài khoản và mở mục Lịch sử đặt hàng. Trạng thái đơn hiện tại được lưu trên trình duyệt này.' },
+  { question: 'Mã khuyến mãi được áp dụng thế nào?', answer: 'Nhập mã trong giỏ hàng. Mỗi mã có điều kiện giá trị đơn tối thiểu và mức giảm tối đa được hiển thị tại mục Ưu đãi.' },
+  { question: 'MobiHub có cửa hàng thật không?', answer: 'Các địa điểm hiện trên trang chỉ là dữ liệu minh họa cho bản demo, chưa phải địa chỉ cửa hàng đang hoạt động.' },
+]
+
 const seedOrders: Order[] = [
   { id: '#MH-24091', customer: 'Nguyễn Minh Anh', phone: '0909091111', address: '12 Lê Lợi, Quận 1, TP.HCM', payment: 'COD', item: 'iPhone 15 Pro Max', items: [{ name: 'iPhone 15 Pro Max', price: 28990000 }], amount: 28990000, status: 'Đang giao', time: '10 phút trước' },
   { id: '#MH-24090', customer: 'Trần Quốc Bảo', phone: '0909092222', address: '88 Hai Bà Trưng, Hà Nội', payment: 'Momo', item: 'Galaxy S24 Ultra', items: [{ name: 'Galaxy S24 Ultra', price: 23990000 }], amount: 23990000, status: 'Đang xử lý', time: '42 phút trước' },
@@ -114,6 +227,31 @@ const readCustomers = (): Customer[] => {
   } catch {
     return []
   }
+}
+
+const readStoredList = <T,>(key: string): T[] => {
+  try {
+    const saved = localStorage.getItem(key)
+    if (!saved) return []
+    const parsed: unknown = JSON.parse(saved)
+    return Array.isArray(parsed) ? parsed as T[] : []
+  } catch {
+    return []
+  }
+}
+
+const getReviewStats = (product: Product, reviews: Review[]) => {
+  const productReviews = reviews.filter((review) => review.productId === product.id)
+  const rating = productReviews.length
+    ? productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length
+    : product.rating
+  return { rating, count: productReviews.length }
+}
+
+const getPromoDiscount = (code: string, subtotal: number): number | null => {
+  if (code === 'MOBI10') return subtotal >= 2000000 ? Math.min(Math.floor(subtotal * 0.1), 500000) : null
+  if (code === 'TECH100') return subtotal >= 5000000 ? 100000 : null
+  return null
 }
 
 const defaultAdmin: AdminAccount = { name: 'Quản trị viên', email: 'admin@mobihub.vn', password: 'admin123' }
@@ -138,6 +276,11 @@ const normalizeOrder = (order: Partial<Order>): Order => ({
   amount: order.amount || 0,
   status: order.status || 'Đang xử lý',
   time: order.time || 'Chưa xác định',
+  subtotal: order.subtotal,
+  discount: order.discount,
+  promoCode: order.promoCode,
+  fulfillment: order.fulfillment || 'Giao hàng',
+  pickupStore: order.pickupStore,
 })
 
 function App() {
@@ -172,7 +315,17 @@ function App() {
   const [mode, setMode] = useState<'store' | 'admin'>('store')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('Tất cả')
+  const [brand, setBrand] = useState('Tất cả')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [productSort, setProductSort] = useState<ProductSort>('recommended')
   const [cart, setCart] = useState<CartItem[]>([])
+  const [reviews, setReviews] = useState<Review[]>(() => readStoredList<Review>('mobihub-reviews'))
+  const [comparisonIds, setComparisonIds] = useState<number[]>([])
+  const [showComparison, setShowComparison] = useState(false)
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
+  const [supportRequests, setSupportRequests] = useState<SupportRequest[]>(() => readStoredList<SupportRequest>('mobihub-support-requests'))
+  const [promoSuggestion, setPromoSuggestion] = useState('')
   const [selected, setSelected] = useState<Product | null>(null)
   const [showCart, setShowCart] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -208,6 +361,32 @@ function App() {
     localStorage.setItem('mobihub-admins', JSON.stringify(nextAdmins))
   }
 
+  const saveReview = (review: Omit<Review, 'id' | 'date'>) => {
+    const nextReviews = [{ ...review, id: `${Date.now()}-${review.productId}`, date: new Date().toLocaleDateString('vi-VN') }, ...reviews]
+    setReviews(nextReviews)
+    localStorage.setItem('mobihub-reviews', JSON.stringify(nextReviews))
+    notify('Đã lưu đánh giá trên thiết bị này')
+  }
+
+  const toggleComparison = (productId: number) => {
+    if (comparisonIds.includes(productId)) {
+      setComparisonIds(comparisonIds.filter((id) => id !== productId))
+      return
+    }
+    if (comparisonIds.length >= 3) {
+      notify('Bạn chỉ có thể so sánh tối đa 3 sản phẩm')
+      return
+    }
+    setComparisonIds([...comparisonIds, productId])
+  }
+
+  const saveSupportRequest = (request: Omit<SupportRequest, 'id' | 'createdAt'>) => {
+    const nextRequests = [{ ...request, id: `MH-SUP-${Date.now()}`, createdAt: new Date().toLocaleString('vi-VN') }, ...supportRequests]
+    setSupportRequests(nextRequests)
+    localStorage.setItem('mobihub-support-requests', JSON.stringify(nextRequests))
+    notify('Đã lưu yêu cầu trên thiết bị này')
+  }
+
   const loginCustomer = (customer: Customer) => {
     setCurrentCustomer(customer)
     setMode('store')
@@ -236,15 +415,36 @@ function App() {
   }
 
   const categories = ['Tất cả', 'iPhone', 'Samsung', 'Xiaomi', 'OPPO', 'Tablet', 'Laptop', 'Tai nghe', 'Tai nghe có dây', 'Sạc dự phòng']
-  const filtered = useMemo(
-    () =>
-      products.filter(
-        (item) =>
-          (category === 'Tất cả' || item.category === category) &&
-          `${item.name} ${item.brand}`.toLowerCase().includes(query.toLowerCase()),
-      ),
-    [products, category, query],
-  )
+  const brands = useMemo(() => [...new Set(products.map((product) => product.brand))].sort((a, b) => a.localeCompare(b, 'vi')), [products])
+  const filtered = useMemo(() => {
+    const matching = products.filter((item) => {
+      const matchesCategory = category === 'Tất cả' || item.category === category
+      const matchesBrand = brand === 'Tất cả' || item.brand === brand
+      const matchesQuery = `${item.name} ${item.brand} ${item.category}`.toLocaleLowerCase('vi').includes(query.trim().toLocaleLowerCase('vi'))
+      const matchesMinPrice = minPrice === '' || item.price >= Number(minPrice)
+      const matchesMaxPrice = maxPrice === '' || item.price <= Number(maxPrice)
+      return matchesCategory && matchesBrand && matchesQuery && matchesMinPrice && matchesMaxPrice
+    })
+
+    switch (productSort) {
+      case 'price-asc':
+        return matching.sort((a, b) => a.price - b.price)
+      case 'price-desc':
+        return matching.sort((a, b) => b.price - a.price)
+      case 'rating':
+        return matching.sort((a, b) => getReviewStats(b, reviews).rating - getReviewStats(a, reviews).rating)
+      default:
+        return matching
+    }
+  }, [products, category, brand, query, minPrice, maxPrice, productSort, reviews])
+  const resetCatalogFilters = () => {
+    setCategory('Tất cả')
+    setBrand('Tất cả')
+    setQuery('')
+    setMinPrice('')
+    setMaxPrice('')
+    setProductSort('recommended')
+  }
   const canViewAdmin = adminAuthenticated && !currentCustomer
 
   const notify = (message: string) => {
@@ -290,8 +490,8 @@ function App() {
         <div className="topbar-inner">
           <span>Miễn phí giao hàng đơn từ 500.000đ</span>
           <div className="top-links">
-            <span>Trung tâm hỗ trợ</span>
-            <span>Kiểm tra đơn hàng</span>
+            <button onClick={() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' })}>Trung tâm hỗ trợ</button>
+              <button onClick={() => setShowOrderHistory(true)}>Kiểm tra đơn hàng</button>
           </div>
         </div>
       </header>
@@ -347,7 +547,36 @@ function App() {
       </nav>
 
       {!canViewAdmin || mode === 'store' ? (
-        <StoreView categories={categories} category={category} setCategory={setCategory} filtered={filtered} addToCart={addToCart} setSelected={setSelected} />
+        <StoreView
+          categories={categories}
+          category={category}
+          setCategory={setCategory}
+          brands={brands}
+          brand={brand}
+          setBrand={setBrand}
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+          productSort={productSort}
+          setProductSort={setProductSort}
+          resetFilters={resetCatalogFilters}
+          filtered={filtered}
+          totalProducts={products.length}
+          reviews={reviews}
+          comparisonIds={comparisonIds}
+          onToggleComparison={toggleComparison}
+          onOpenComparison={() => setShowComparison(true)}
+          onSelectPromotion={(code) => {
+            setPromoSuggestion(code)
+            if (cart.length > 0) setShowCart(true)
+            else notify(`Đã lưu mã ${code}. Thêm sản phẩm vào giỏ để áp dụng.`)
+          }}
+          onSubmitSupport={saveSupportRequest}
+          onOpenArticle={setSelectedArticle}
+          addToCart={addToCart}
+          setSelected={setSelected}
+        />
       ) : (
         <AdminView
           products={products}
@@ -366,15 +595,25 @@ function App() {
           }}
           onDelete={(id) => {
             saveProducts(products.filter((product) => product.id !== id))
+            setComparisonIds((current) => current.filter((productId) => productId !== id))
             notify('Đã xóa sản phẩm')
           }}
         />
       )}
 
-      {selected && <ProductModal product={selected} onClose={() => setSelected(null)} addToCart={addToCart} />}
+      {selected && (
+        <ProductModal
+          product={selected}
+          reviews={reviews.filter((review) => review.productId === selected.id)}
+          onClose={() => setSelected(null)}
+          addToCart={addToCart}
+          onReview={(review) => saveReview({ ...review, productId: selected.id })}
+        />
+      )}
       {showCart && (
         <CartDrawer
           cart={cart}
+          initialPromoCode={promoSuggestion}
           onClose={() => setShowCart(false)}
           updateQuantity={(productId, change) => setCart((items) =>
             items.flatMap((item) => {
@@ -385,7 +624,7 @@ function App() {
           )}
           remove={(productId) => setCart((items) => items.filter((item) => item.product.id !== productId))}
           checkout={(payload: CheckoutPayload) => {
-            const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+            const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
             const orderItems = cart.map(({ product, quantity }) => ({ name: product.name, price: product.price, quantity }))
             const itemNames = orderItems.map((item) => item.name).slice(0, 2).join(', ')
             const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
@@ -395,21 +634,39 @@ function App() {
               customer: payload.customer,
               phone: payload.phone,
               address: payload.address,
+              fulfillment: payload.fulfillment,
+              pickupStore: payload.pickupStore || undefined,
               payment: payload.payment,
               item: itemCount > 2 ? `${itemNames} + ${itemCount - 2} sản phẩm` : itemNames || 'Sản phẩm',
               items: orderItems,
-              amount: total,
+              amount: subtotal - payload.discount,
               status: 'Đang xử lý',
               time: 'Vừa xong',
+              subtotal,
+              discount: payload.discount,
+              promoCode: payload.promoCode || undefined,
             }
 
             updateOrders([newOrder, ...orders])
             setShowCart(false)
             setCart([])
+            setPromoSuggestion('')
             notify(`Đặt hàng thành công cho ${payload.customer}. Thanh toán: ${payload.payment}`)
           }}
         />
       )}
+      {showComparison && (
+        <ComparisonModal
+          products={products.filter((product) => comparisonIds.includes(product.id))}
+          onClose={() => setShowComparison(false)}
+          onRemove={toggleComparison}
+          onSelectProduct={(product) => {
+            setShowComparison(false)
+            setSelected(product)
+          }}
+        />
+      )}
+      {selectedArticle && <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />}
       {showForm && <ProductForm product={editing} onClose={() => { setShowForm(false); setEditing(null) }} onSubmit={submitProduct} />}
       {showAdminLogin && <AdminLoginModal admins={admins} onClose={() => setShowAdminLogin(false)} onRegister={(admin) => {
         if (admins.some((item) => item.email.toLowerCase() === admin.email.toLowerCase())) return false
@@ -464,14 +721,50 @@ function StoreView({
   categories,
   category,
   setCategory,
+  brands,
+  brand,
+  setBrand,
+  minPrice,
+  setMinPrice,
+  maxPrice,
+  setMaxPrice,
+  productSort,
+  setProductSort,
+  resetFilters,
   filtered,
+  totalProducts,
+  reviews,
+  comparisonIds,
+  onToggleComparison,
+  onOpenComparison,
+  onSelectPromotion,
+  onSubmitSupport,
+  onOpenArticle,
   addToCart,
   setSelected,
 }: {
   categories: string[]
   category: string
   setCategory: (value: string) => void
+  brands: string[]
+  brand: string
+  setBrand: (value: string) => void
+  minPrice: string
+  setMinPrice: (value: string) => void
+  maxPrice: string
+  setMaxPrice: (value: string) => void
+  productSort: ProductSort
+  setProductSort: (value: ProductSort) => void
+  resetFilters: () => void
   filtered: Product[]
+  totalProducts: number
+  reviews: Review[]
+  comparisonIds: number[]
+  onToggleComparison: (productId: number) => void
+  onOpenComparison: () => void
+  onSelectPromotion: (code: string) => void
+  onSubmitSupport: (request: Omit<SupportRequest, 'id' | 'createdAt'>) => void
+  onOpenArticle: (article: Article) => void
   addToCart: (product: Product) => void
   setSelected: (product: Product) => void
 }) {
@@ -493,12 +786,12 @@ function StoreView({
           </button>
           <div className="hero-stats">
             <span>
-              <strong>2.000+</strong>
-              <small>Sản phẩm chính hãng</small>
+              <strong>{totalProducts}</strong>
+              <small>sản phẩm trong catalog</small>
             </span>
             <span>
-              <strong>4.9/5</strong>
-              <small>Đánh giá khách hàng</small>
+              <strong>3 bước</strong>
+              <small>Chọn · so sánh · đặt hàng</small>
             </span>
           </div>
         </div>
@@ -553,7 +846,7 @@ function StoreView({
               Chọn món đồ <span>hợp gu</span>
             </h2>
           </div>
-          <button className="text-btn">
+          <button className="text-btn" onClick={resetFilters}>
             Xem tất cả <ArrowRight size={16} />
           </button>
         </div>
@@ -566,22 +859,97 @@ function StoreView({
           ))}
         </div>
 
-        <div className="product-grid">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} addToCart={addToCart} setSelected={setSelected} />
-          ))}
+        <div className="catalog-toolbar">
+          <span className="catalog-count">{filtered.length} sản phẩm</span>
+          <button
+            className="outline-btn compare-open-btn"
+            disabled={comparisonIds.length < 2}
+            onClick={onOpenComparison}
+          >
+            <Scale size={15} /> So sánh ({comparisonIds.length}/3)
+          </button>
+          <label>
+            Thương hiệu
+            <select value={brand} onChange={(event) => setBrand(event.target.value)}>
+              <option value="Tất cả">Tất cả thương hiệu</option>
+              {brands.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <fieldset className="price-filter">
+            <legend>Khoảng giá</legend>
+            <input
+              type="number"
+              min="0"
+              aria-label="Giá thấp nhất"
+              placeholder="Từ"
+              value={minPrice}
+              onChange={(event) => setMinPrice(event.target.value)}
+            />
+            <span>—</span>
+            <input
+              type="number"
+              min="0"
+              aria-label="Giá cao nhất"
+              placeholder="Đến"
+              value={maxPrice}
+              onChange={(event) => setMaxPrice(event.target.value)}
+            />
+          </fieldset>
+          <label>
+            Sắp xếp
+            <select value={productSort} onChange={(event) => setProductSort(event.target.value as ProductSort)}>
+              <option value="recommended">Gợi ý</option>
+              <option value="price-asc">Giá thấp đến cao</option>
+              <option value="price-desc">Giá cao đến thấp</option>
+              <option value="rating">Đánh giá cao</option>
+            </select>
+          </label>
         </div>
+
+        {filtered.length > 0 ? (
+          <div className="product-grid">
+            {filtered.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                reviewStats={getReviewStats(product, reviews)}
+                isCompared={comparisonIds.includes(product.id)}
+                toggleComparison={onToggleComparison}
+                addToCart={addToCart}
+                setSelected={setSelected}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="catalog-empty">
+            <Search size={24} />
+            <strong>Chưa tìm thấy sản phẩm phù hợp</strong>
+            <span>Thử đổi từ khóa hoặc điều chỉnh bộ lọc.</span>
+            <button className="outline-btn" onClick={resetFilters}>Xóa bộ lọc</button>
+          </div>
+        )}
       </section>
+
+      <PromotionSection offers={promoOffers} onSelect={onSelectPromotion} />
+      <StoreLocator stores={demoStores} />
+      <ArticleSection items={articles} onOpen={onOpenArticle} />
+      <SupportSection onSubmit={onSubmitSupport} />
     </main>
   )
 }
 
 function ProductCard({
   product,
+  reviewStats,
+  isCompared,
+  toggleComparison,
   addToCart,
   setSelected,
 }: {
   product: Product
+  reviewStats: { rating: number; count: number }
+  isCompared: boolean
+  toggleComparison: (productId: number) => void
   addToCart: (product: Product) => void
   setSelected: (product: Product) => void
 }) {
@@ -597,7 +965,9 @@ function ProductCard({
         <small>{product.brand}</small>
         <h3>{product.name}</h3>
         <div className="rating">
-          <Star size={14} fill="currentColor" /> {product.rating} <span>·</span> <span>{product.stock} sản phẩm</span>
+          <Star size={14} fill="currentColor" /> {reviewStats.count ? reviewStats.rating.toFixed(1) : '—'}
+          <span>({reviewStats.count ? `${reviewStats.count} đánh giá` : 'chưa có đánh giá'})</span>
+          <span>·</span> <span>{product.stock} sản phẩm</span>
         </div>
         <div className="price-row">
           <strong>{money(product.price)}</strong>
@@ -610,6 +980,9 @@ function ProductCard({
               <i key={color} style={{ backgroundColor: color }} />
             ))}
           </div>
+          <button className={`compare-toggle ${isCompared ? 'selected' : ''}`} onClick={() => toggleComparison(product.id)}>
+            <Scale size={14} /> {isCompared ? 'Đã chọn' : 'So sánh'}
+          </button>
           <button className="add-btn" onClick={() => addToCart(product)}>
             <Plus size={18} />
           </button>
@@ -621,13 +994,22 @@ function ProductCard({
 
 function ProductModal({
   product,
+  reviews,
   onClose,
   addToCart,
+  onReview,
 }: {
   product: Product
+  reviews: Review[]
   onClose: () => void
   addToCart: (product: Product) => void
+  onReview: (review: { name: string; rating: number; comment: string }) => void
 }) {
+  const [reviewName, setReviewName] = useState('')
+  const [reviewRating, setReviewRating] = useState('5')
+  const [reviewComment, setReviewComment] = useState('')
+  const reviewStats = getReviewStats(product, reviews)
+
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal product-modal" onClick={(event) => event.stopPropagation()}>
@@ -641,18 +1023,61 @@ function ProductModal({
           <small>{product.brand}</small>
           <h2>{product.name}</h2>
           <div className="rating">
-            <Star size={15} fill="currentColor" /> {product.rating} · Đã bán 128
+            <Star size={15} fill="currentColor" /> {reviews.length ? reviewStats.rating.toFixed(1) : 'Chưa có đánh giá'}
           </div>
           <div className="modal-price">
             {money(product.price)} <del>{money(product.oldPrice)}</del>
           </div>
-          <p>Thiết kế cao cấp, hiệu năng mạnh mẽ và bảo hành chính hãng. Tặng kèm gói bảo vệ toàn diện khi mua hôm nay.</p>
+          <div className="product-details">
+            <div><span>Thương hiệu</span><b>{product.brand}</b></div>
+            <div><span>Danh mục</span><b>{product.category}</b></div>
+            <div><span>Tình trạng</span><b>{product.stock > 0 ? `Còn ${product.stock} sản phẩm` : 'Tạm hết hàng'}</b></div>
+            <div><span>Màu sắc</span><b>{product.colors.length} lựa chọn</b></div>
+          </div>
+          <div className="specification-list">
+            <h3>Thông số kỹ thuật</h3>
+            {product.specifications?.trim() ? product.specifications.split('\n').filter(Boolean).map((line) => {
+              const [label, ...values] = line.split(':')
+              return <div key={line}><span>{label.trim()}</span><b>{values.join(':').trim() || '—'}</b></div>
+            }) : <p>Chưa cập nhật thông số cho sản phẩm này. Quản trị viên có thể bổ sung trong mục chỉnh sửa sản phẩm.</p>}
+          </div>
+          <p>Thông tin hiển thị dựa trên catalog demo hiện tại. Vui lòng kiểm tra chính sách và thông số từ nhà sản xuất trước khi mua thực tế.</p>
           <div className="modal-actions">
-            <button className="primary-btn" onClick={() => { addToCart(product); onClose() }}>
+            <button className="primary-btn" disabled={product.stock < 1} onClick={() => { addToCart(product); onClose() }}>
               Thêm vào giỏ <ShoppingCart size={17} />
             </button>
             <button className="outline-btn" onClick={onClose}>Đóng</button>
           </div>
+          <section className="review-panel">
+            <div className="review-heading">
+              <div><span className="section-kicker">Cộng đồng</span><h3>Đánh giá sản phẩm</h3></div>
+              <strong><Star size={15} fill="currentColor" /> {reviewStats.rating.toFixed(1)}</strong>
+            </div>
+            <form className="review-form" onSubmit={(event) => {
+              event.preventDefault()
+              onReview({ name: reviewName.trim() || 'Khách MobiHub', rating: Number(reviewRating), comment: reviewComment.trim() })
+              setReviewName('')
+              setReviewRating('5')
+              setReviewComment('')
+            }}>
+              <input value={reviewName} onChange={(event) => setReviewName(event.target.value)} placeholder="Tên hiển thị (không bắt buộc)" maxLength={60} />
+              <select aria-label="Số sao" value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
+                <option value="5">5 sao</option><option value="4">4 sao</option><option value="3">3 sao</option><option value="2">2 sao</option><option value="1">1 sao</option>
+              </select>
+              <textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} placeholder="Chia sẻ cảm nhận của bạn" required maxLength={500} />
+              <button className="outline-btn" type="submit"><MessageCircle size={15} /> Gửi đánh giá</button>
+              <small>Đánh giá demo được lưu trên trình duyệt này, chưa gửi lên máy chủ.</small>
+            </form>
+            <div className="review-list">
+              {reviews.length ? reviews.slice(0, 5).map((review) => (
+                <article key={review.id}>
+                  <div><b>{review.name}</b><small>{review.date}</small></div>
+                  <span><Star size={13} fill="currentColor" /> {review.rating}/5</span>
+                  <p>{review.comment}</p>
+                </article>
+              )) : <p className="muted-copy">Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ.</p>}
+            </div>
+          </section>
         </div>
       </div>
     </div>
@@ -661,31 +1086,42 @@ function ProductModal({
 
 function CartDrawer({
   cart,
+  initialPromoCode,
   onClose,
   updateQuantity,
   remove,
   checkout,
 }: {
   cart: CartItem[]
+  initialPromoCode: string
   onClose: () => void
   updateQuantity: (productId: number, change: number) => void
   remove: (productId: number) => void
   checkout: (payload: CheckoutPayload) => void
 }) {
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const [promoCode, setPromoCode] = useState(initialPromoCode)
+  const [appliedPromo, setAppliedPromo] = useState('')
+  const [promoMessage, setPromoMessage] = useState('')
+  const discount = appliedPromo ? getPromoDiscount(appliedPromo, subtotal) || 0 : 0
+  const total = subtotal - discount
   const [isCheckoutForm, setIsCheckoutForm] = useState(false)
   const [customer, setCustomer] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
+  const [fulfillment, setFulfillment] = useState<CheckoutPayload['fulfillment']>('Giao hàng')
+  const [pickupStore, setPickupStore] = useState('')
   const [payment, setPayment] = useState<CheckoutPayload['payment']>('COD')
-  const [errors, setErrors] = useState<{ customer?: string; phone?: string; address?: string }>({})
+  const [errors, setErrors] = useState<{ customer?: string; phone?: string; address?: string; pickupStore?: string }>({})
 
   const submitOrder = () => {
+    const selectedStore = demoStores.find((store) => store.id === Number(pickupStore))
     const nextErrors = {
       customer: customer.trim() ? undefined : 'Vui lòng nhập họ và tên',
       phone: phone.trim() ? undefined : 'Vui lòng nhập số điện thoại',
-      address: address.trim() ? undefined : 'Vui lòng nhập địa chỉ giao hàng',
+      address: fulfillment === 'Giao hàng' && !address.trim() ? 'Vui lòng nhập địa chỉ giao hàng' : undefined,
+      pickupStore: fulfillment === 'Nhận tại cửa hàng' && !selectedStore ? 'Vui lòng chọn điểm nhận hàng' : undefined,
     }
 
     setErrors(nextErrors)
@@ -693,7 +1129,16 @@ function CartDrawer({
       return
     }
 
-    checkout({ customer: customer.trim(), phone: phone.trim(), address: address.trim(), payment })
+    checkout({
+      customer: customer.trim(),
+      phone: phone.trim(),
+      address: fulfillment === 'Giao hàng' ? address.trim() : selectedStore?.address || '',
+      payment,
+      promoCode: appliedPromo,
+      discount,
+      fulfillment,
+      pickupStore: selectedStore?.name || '',
+    })
   }
 
   return (
@@ -719,6 +1164,11 @@ function CartDrawer({
           </div>
         ) : isCheckoutForm ? (
           <div className="checkout-form-wrap">
+            <div className="checkout-total">
+              <div><span>Tạm tính</span><b>{money(subtotal)}</b></div>
+              {discount > 0 && <div><span>Ưu đãi {appliedPromo}</span><b className="promo-success">−{money(discount)}</b></div>}
+              <div><strong>Tổng thanh toán</strong><strong>{money(total)}</strong></div>
+            </div>
             <div className="checkout-form-block">
               <label>
                 Họ và tên
@@ -731,10 +1181,31 @@ function CartDrawer({
                 {errors.phone && <span className="field-error">{errors.phone}</span>}
               </label>
               <label>
-                Địa chỉ giao hàng
-                <input className={errors.address ? 'input-error' : ''} value={address} onChange={(event) => { setAddress(event.target.value); setErrors((current) => ({ ...current, address: undefined })) }} placeholder="123 Lê Lợi, Q.1, TP.HCM" />
-                {errors.address && <span className="field-error">{errors.address}</span>}
+                Hình thức nhận hàng
+                <select value={fulfillment} onChange={(event) => {
+                  setFulfillment(event.target.value as CheckoutPayload['fulfillment'])
+                  setErrors((current) => ({ ...current, address: undefined, pickupStore: undefined }))
+                }}>
+                  <option value="Giao hàng">Giao hàng đến địa chỉ</option>
+                  <option value="Nhận tại cửa hàng">Nhận tại cửa hàng</option>
+                </select>
               </label>
+              {fulfillment === 'Giao hàng' ? (
+                <label>
+                  Địa chỉ giao hàng
+                  <input className={errors.address ? 'input-error' : ''} value={address} onChange={(event) => { setAddress(event.target.value); setErrors((current) => ({ ...current, address: undefined })) }} placeholder="123 Lê Lợi, Q.1, TP.HCM" />
+                  {errors.address && <span className="field-error">{errors.address}</span>}
+                </label>
+              ) : (
+                <label>
+                  Điểm nhận hàng
+                  <select className={errors.pickupStore ? 'input-error' : ''} value={pickupStore} onChange={(event) => { setPickupStore(event.target.value); setErrors((current) => ({ ...current, pickupStore: undefined })) }}>
+                    <option value="">Chọn cửa hàng minh họa</option>
+                    {demoStores.map((store) => <option key={store.id} value={store.id}>{store.name} — {store.city}</option>)}
+                  </select>
+                  {errors.pickupStore && <span className="field-error">{errors.pickupStore}</span>}
+                </label>
+              )}
               <label>
                 Phương thức thanh toán
                 <select value={payment} onChange={(event) => setPayment(event.target.value as CheckoutPayload['payment'])}>
@@ -744,6 +1215,7 @@ function CartDrawer({
                   <option value="Card">Thẻ tín dụng / ghi nợ</option>
                 </select>
               </label>
+              <p className="demo-note">Đây là quy trình đặt hàng demo. Thanh toán, giao hàng và điểm nhận chưa kết nối hệ thống thực tế.</p>
             </div>
 
             <div className="checkout-action-row">
@@ -755,6 +1227,24 @@ function CartDrawer({
           </div>
         ) : (
           <>
+            <div className="promo-entry">
+              <label htmlFor="promo-code">Mã khuyến mãi</label>
+              <div>
+                <input id="promo-code" value={promoCode} onChange={(event) => setPromoCode(event.target.value.toUpperCase())} placeholder="Nhập mã ưu đãi" />
+                <button className="outline-btn" onClick={() => {
+                  const code = promoCode.trim().toUpperCase()
+                  const amount = getPromoDiscount(code, subtotal)
+                  if (amount === null) {
+                    setAppliedPromo('')
+                    setPromoMessage(code === 'MOBI10' || code === 'TECH100' ? 'Đơn hàng chưa đạt giá trị tối thiểu của mã.' : 'Mã ưu đãi không hợp lệ.')
+                    return
+                  }
+                  setAppliedPromo(code)
+                  setPromoMessage(`Đã áp dụng ${code}.`)
+                }}>Áp dụng</button>
+              </div>
+              {promoMessage && <small className={discount ? 'promo-success' : 'promo-error'}>{promoMessage}</small>}
+            </div>
             <div className="cart-items">
               {cart.map(({ product, quantity }) => (
                 <div className="cart-item" key={product.id}>
@@ -787,8 +1277,10 @@ function CartDrawer({
             <div className="cart-summary">
               <div>
                 <span>Tạm tính</span>
-                <b>{money(total)}</b>
+                <b>{money(subtotal)}</b>
               </div>
+              {discount > 0 && <div><span>Ưu đãi {appliedPromo}</span><b className="promo-success">−{money(discount)}</b></div>}
+              {appliedPromo && discount === 0 && <div><span>Mã {appliedPromo}</span><b className="promo-error">Không còn đủ điều kiện</b></div>}
               <div>
                 <span>Phí giao hàng</span>
                 <b className="free">Miễn phí</b>
@@ -805,6 +1297,189 @@ function CartDrawer({
           </>
         )}
       </aside>
+    </div>
+  )
+}
+
+function PromotionSection({ offers, onSelect }: {
+  offers: typeof promoOffers
+  onSelect: (code: string) => void
+}) {
+  return (
+    <section className="content-section promotion-section" id="promotions">
+      <div className="section-heading">
+        <div><span className="section-kicker">Ưu đãi MobiHub</span><h2>Mã giảm giá <span>demo</span></h2></div>
+        <Tag size={25} />
+      </div>
+      <div className="promotion-grid">
+        {offers.map((offer) => (
+          <article className="promotion-card" key={offer.code}>
+            <div className="promotion-ticket"><b>{offer.title}</b><span>{offer.description}</span></div>
+            <div className="promotion-action"><code>{offer.code}</code><button className="outline-btn" onClick={() => onSelect(offer.code)}>Dùng mã</button></div>
+          </article>
+        ))}
+      </div>
+      <p className="demo-note">Ưu đãi minh họa cho bản demo. Mã được áp dụng tại giỏ hàng và chưa kết nối hệ thống thanh toán.</p>
+    </section>
+  )
+}
+
+function StoreLocator({ stores }: { stores: StoreLocation[] }) {
+  const [city, setCity] = useState('Tất cả')
+  const cities = ['Tất cả', ...new Set(stores.map((store) => store.city))]
+  const visibleStores = city === 'Tất cả' ? stores : stores.filter((store) => store.city === city)
+
+  return (
+    <section className="content-section locator-section" id="stores">
+      <div className="section-heading">
+        <div><span className="section-kicker">Tìm điểm gần bạn</span><h2>Hệ thống cửa hàng <span>demo</span></h2></div>
+        <MapPin size={25} />
+      </div>
+      <p className="demo-note">Các địa chỉ dưới đây chỉ minh họa giao diện, không phải cửa hàng đang hoạt động. Tồn kho theo chi nhánh chưa được kết nối.</p>
+      <div className="locator-filter">
+        <label htmlFor="store-city">Khu vực</label>
+        <select id="store-city" value={city} onChange={(event) => setCity(event.target.value)}>
+          {cities.map((item) => <option key={item}>{item}</option>)}
+        </select>
+      </div>
+      <div className="store-grid">
+        {visibleStores.map((store) => (
+          <article className="store-card" key={store.id}>
+            <div className="store-card-icon"><MapPin size={20} /></div>
+            <span className="store-city">{store.city}</span>
+            <h3>{store.name}</h3>
+            <p>{store.address}</p>
+            <div><Clock3 size={15} /> {store.hours} · giờ minh họa</div>
+            <div><Phone size={15} /> {store.phone}</div>
+            <a className="outline-btn" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.address)}`} target="_blank" rel="noreferrer">Xem trên bản đồ</a>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ArticleSection({ items, onOpen }: { items: Article[]; onOpen: (article: Article) => void }) {
+  return (
+    <section className="content-section article-section" id="articles">
+      <div className="section-heading">
+        <div><span className="section-kicker">MobiHub chia sẻ</span><h2>Góc công nghệ <span>& mẹo hay</span></h2></div>
+        <BookOpen size={25} />
+      </div>
+      <div className="article-grid">
+        {items.map((article) => (
+          <article className="article-card" key={article.id}>
+            <button className="article-image" onClick={() => onOpen(article)} aria-label={`Đọc bài: ${article.title}`}>
+              <img src={article.image} alt="" loading="lazy" />
+            </button>
+            <div className="article-copy">
+              <div><span>{article.category}</span><small>{article.readTime}</small></div>
+              <h3>{article.title}</h3>
+              <p>{article.excerpt}</p>
+              <button className="text-btn" onClick={() => onOpen(article)}>Đọc bài viết <ArrowRight size={15} /></button>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="demo-note">Nội dung biên tập dùng cho bản demo, chỉ mang tính tham khảo.</p>
+    </section>
+  )
+}
+
+function SupportSection({ onSubmit }: {
+  onSubmit: (request: Omit<SupportRequest, 'id' | 'createdAt'>) => void
+}) {
+  const [name, setName] = useState('')
+  const [contact, setContact] = useState('')
+  const [message, setMessage] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  return (
+    <section className="content-section support-section" id="support">
+      <div className="section-heading">
+        <div><span className="section-kicker">MobiHub đồng hành</span><h2>Trung tâm <span>hỗ trợ</span></h2></div>
+        <MessageCircle size={25} />
+      </div>
+      <div className="support-layout">
+        <div className="faq-list">
+          {supportFaqs.map((faq) => (
+            <details key={faq.question}>
+              <summary>{faq.question}<ChevronDown size={17} /></summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+          <div className="support-contact-note"><Mail size={18} /><span><b>Gửi câu hỏi cho MobiHub</b><small>Biểu mẫu demo chỉ lưu nội dung trong trình duyệt này; chưa gửi thông tin đến nhân viên hỗ trợ.</small></span></div>
+        </div>
+        <form className="support-form" onSubmit={(event) => {
+          event.preventDefault()
+          onSubmit({ name: name.trim(), contact: contact.trim(), message: message.trim() })
+          setName('')
+          setContact('')
+          setMessage('')
+          setSubmitted(true)
+        }}>
+          <h3>Để lại lời nhắn</h3>
+          <label>Họ tên<input required maxLength={80} value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên của bạn" /></label>
+          <label>Email hoặc số điện thoại<input required maxLength={120} value={contact} onChange={(event) => setContact(event.target.value)} placeholder="Thông tin liên hệ" /></label>
+          <label>Nội dung<textarea required maxLength={1000} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Bạn cần MobiHub hỗ trợ điều gì?" /></label>
+          {submitted && <p className="support-success">Đã lưu lời nhắn trên thiết bị này.</p>}
+          <button className="primary-btn" type="submit"><MessageCircle size={16} /> Gửi lời nhắn</button>
+        </form>
+      </div>
+    </section>
+  )
+}
+
+function ComparisonModal({ products, onClose, onRemove, onSelectProduct }: {
+  products: Product[]
+  onClose: () => void
+  onRemove: (productId: number) => void
+  onSelectProduct: (product: Product) => void
+}) {
+  const rows: Array<{ label: string; value: (product: Product) => ReactNode }> = [
+    { label: 'Thương hiệu', value: (product) => product.brand },
+    { label: 'Danh mục', value: (product) => product.category },
+    { label: 'Giá bán', value: (product) => <b>{money(product.price)}</b> },
+    { label: 'Giá niêm yết', value: (product) => money(product.oldPrice) },
+    { label: 'Đánh giá mẫu', value: (product) => <><Star size={14} fill="currentColor" /> {product.rating.toFixed(1)}/5</> },
+    { label: 'Tồn kho', value: (product) => `${product.stock} sản phẩm` },
+    { label: 'Màu sắc', value: (product) => `${product.colors.length} lựa chọn` },
+    { label: 'Thông số kỹ thuật', value: (product) => product.specifications?.trim() || 'Chưa cập nhật' },
+  ]
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal comparison-modal" onClick={(event) => event.stopPropagation()}>
+        <div className="modal-title"><div><span className="section-kicker">Đối chiếu catalog</span><h2>So sánh sản phẩm</h2></div><button className="close-btn" onClick={onClose}><X size={20} /></button></div>
+        {products.length < 2 ? <div className="catalog-empty"><Scale size={24} /><strong>Chọn ít nhất 2 sản phẩm để so sánh</strong></div> : (
+          <div className="comparison-table-wrap">
+            <table className="comparison-table">
+              <thead><tr><th>Thông tin</th>{products.map((product) => <th key={product.id}><img src={product.image} alt="" /><b>{product.name}</b><button className="tiny-link" onClick={() => onRemove(product.id)}>Bỏ chọn</button></th>)}</tr></thead>
+              <tbody>{rows.map((row) => <tr key={row.label}><th>{row.label}</th>{products.map((product) => <td key={product.id}>{row.value(product)}</td>)}</tr>)}</tbody>
+              <tfoot><tr><th></th>{products.map((product) => <td key={product.id}><button className="primary-btn" onClick={() => onSelectProduct(product)}>Xem chi tiết</button></td>)}</tr></tfoot>
+            </table>
+          </div>
+        )}
+        <p className="demo-note">Đánh giá và thông tin chỉ phản ánh dữ liệu catalog trên thiết bị; đây chưa phải thông số xác thực từ nhà sản xuất.</p>
+      </div>
+    </div>
+  )
+}
+
+function ArticleModal({ article, onClose }: { article: Article; onClose: () => void }) {
+  return (
+    <div className="overlay" onClick={onClose}>
+      <article className="modal article-modal" onClick={(event) => event.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}><X size={20} /></button>
+        <img src={article.image} alt="" />
+        <div className="article-modal-copy">
+          <span className="section-kicker">{article.category} · {article.readTime}</span>
+          <h2>{article.title}</h2>
+          <p className="article-lead">{article.excerpt}</p>
+          {article.content.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <p className="demo-note">Nội dung tham khảo trong bản demo MobiHub.</p>
+        </div>
+      </article>
     </div>
   )
 }
@@ -979,11 +1654,12 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
     drawField('Thời gian', order.time, 760, 225)
     drawField('Khách hàng', order.customer, 80, 330)
     drawField('Số điện thoại', order.phone, 760, 330)
-    drawField('Địa chỉ giao hàng', order.address, 80, 435)
+    drawField(order.fulfillment === 'Nhận tại cửa hàng' ? 'Điểm nhận' : 'Địa chỉ giao hàng', order.pickupStore || order.address, 80, 435)
     drawField('Thanh toán', order.payment, 760, 435)
-    drawField('Trạng thái', order.status, 80, 540)
+    drawField('Hình thức nhận', order.fulfillment || 'Giao hàng', 80, 540)
+    drawField('Trạng thái', order.status, 760, 540)
 
-    const tableTop = 625
+    const tableTop = 645
     context.fillStyle = '#f3f7f9'
     context.fillRect(80, tableTop, 1240, 58)
     context.fillStyle = '#58707c'
@@ -991,7 +1667,7 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
     context.fillText('SẢN PHẨM', 105, tableTop + 36)
     context.fillText('SL', 820, tableTop + 36)
     context.fillText('ĐƠN GIÁ', 930, tableTop + 36)
-    context.fillText('THÀNH TIỀN', 1130, tableTop + 36)
+    context.fillText('THÀNH TIỀN', 1120, tableTop + 36)
 
     order.items.forEach((item, index) => {
       const rowTop = tableTop + 58 + index * 62
@@ -1000,7 +1676,7 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
       context.fillText(item.name, 105, rowTop + 38)
       context.fillText(String(item.quantity || 1), 820, rowTop + 38)
       context.fillText(money(item.price), 930, rowTop + 38)
-      context.fillText(money(item.price * (item.quantity || 1)), 1130, rowTop + 38)
+      context.fillText(money(item.price * (item.quantity || 1)), 1120, rowTop + 38)
       context.strokeStyle = '#dfe8ec'
       context.beginPath()
       context.moveTo(80, rowTop + 62)
@@ -1011,10 +1687,18 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
     const totalY = tableTop + 110 + order.items.length * 62
     context.fillStyle = '#718596'
     context.font = '18px Arial'
-    context.fillText('Tổng cộng', 1050, totalY)
+    if (order.discount) {
+      context.fillText('Tạm tính', 1050, totalY - 38)
+      context.fillStyle = '#102a43'
+      context.fillText(money(order.subtotal || order.amount + order.discount), 1050, totalY - 8)
+      context.fillStyle = '#23845f'
+      context.fillText(`Ưu đãi ${order.promoCode || ''}: -${money(order.discount)}`, 930, totalY + 28)
+    }
+    context.fillStyle = '#718596'
+    context.fillText('Tổng thanh toán', 1050, totalY + (order.discount ? 62 : 0))
     context.fillStyle = '#102a43'
     context.font = '700 28px Arial'
-    context.fillText(money(order.amount), 1050, totalY + 40)
+    context.fillText(money(order.amount), 1050, totalY + (order.discount ? 98 : 40))
 
     canvas.toBlob((blob) => {
       if (!blob) return
@@ -1061,7 +1745,7 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
             <strong>{order.phone}</strong>
           </div>
           <div className="wide">
-            <small>Địa chỉ giao hàng</small>
+            <small>{order.fulfillment === 'Nhận tại cửa hàng' ? 'Điểm nhận hàng' : 'Địa chỉ giao hàng'}</small>
             <strong>{order.address}</strong>
           </div>
           <div>
@@ -1072,6 +1756,11 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
             <small>Trạng thái</small>
             <strong>{order.status}</strong>
           </div>
+          <div>
+            <small>Hình thức nhận</small>
+            <strong>{order.fulfillment || 'Giao hàng'}</strong>
+          </div>
+          {order.pickupStore && <div className="wide"><small>Cửa hàng nhận</small><strong>{order.pickupStore}</strong></div>}
         </div>
 
         <div className="invoice-body">
@@ -1098,8 +1787,14 @@ function InvoiceModal({ order, onClose }: { order: Order; onClose: () => void })
         </div>
 
         <div className="invoice-foot">
+          {order.subtotal !== undefined && order.discount ? (
+            <div className="invoice-discount">
+              <span>Tạm tính</span><strong>{money(order.subtotal)}</strong>
+              <span>Ưu đãi {order.promoCode}</span><strong>−{money(order.discount)}</strong>
+            </div>
+          ) : null}
           <div>
-            <span>Tổng cộng</span>
+            <span>Tổng thanh toán</span>
             <strong>{money(order.amount)}</strong>
           </div>
         </div>
@@ -1283,6 +1978,7 @@ function ProductForm({
       stock: 10,
       image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=700&q=85',
       colors: ['#adb5bd'],
+      specifications: '',
     },
   )
 
@@ -1359,6 +2055,17 @@ function ProductForm({
           <label className="wide">
             Link hình ảnh
             <input value={form.image} onChange={(event) => update('image', event.target.value)} />
+          </label>
+
+          <label className="wide">
+            Thông số kỹ thuật
+            <textarea
+              value={form.specifications || ''}
+              onChange={(event) => update('specifications', event.target.value)}
+              placeholder={'Màn hình: ...\nDung lượng: ...\nKết nối: ...'}
+              rows={4}
+            />
+            <small>Mỗi dòng nhập theo dạng “Tên thông số: Giá trị”.</small>
           </label>
         </div>
 
